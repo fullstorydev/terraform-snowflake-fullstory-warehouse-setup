@@ -1,0 +1,26 @@
+formatter: "markdown"
+output:
+  file: README.md
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+content: |-
+  {{ .Requirements }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+  ## Usage
+
+  ```hcl
+  {{ include "examples/basic/main.tf" }}
+  ```
+
+  ### Creating a READER role
+  This module **does not** create a READER role. You can use the following example to create a READER role that will allow a user to use and read all objects _and_ all future objects in the database.
+  ```hcl
+  {{ include "examples/reader_role/main.tf" }}
+  ```

@@ -4,10 +4,12 @@ locals {
 }
 
 resource "snowflake_role" "main" {
-  name = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
+  provider = snowflake.security_admin
+  name     = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
 }
 
 resource "snowflake_grant_privileges_to_role" "database" {
+  provider       = snowflake.security_admin
   all_privileges = true
   role_name      = snowflake_role.main.name
   on_account_object {
@@ -17,8 +19,8 @@ resource "snowflake_grant_privileges_to_role" "database" {
 }
 
 resource "snowflake_grant_privileges_to_role" "warehouse" {
-  role_name = snowflake_role.main.name
-
+  provider   = snowflake.security_admin
+  role_name  = snowflake_role.main.name
   privileges = ["USAGE"]
   on_account_object {
     object_type = "WAREHOUSE"
@@ -33,6 +35,7 @@ resource "random_password" "main" {
 }
 
 resource "snowflake_user" "main" {
+  provider          = snowflake.security_admin
   name              = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
   default_warehouse = var.warehouse_name
   default_role      = snowflake_role.main.name
@@ -40,8 +43,8 @@ resource "snowflake_user" "main" {
 }
 
 resource "snowflake_grant_privileges_to_role" "user" {
-  role_name = snowflake_role.main.name
-
+  provider   = snowflake.security_admin
+  role_name  = snowflake_role.main.name
   privileges = ["MONITOR"]
   on_account_object {
     object_type = "USER"
@@ -50,6 +53,7 @@ resource "snowflake_grant_privileges_to_role" "user" {
 }
 
 resource "snowflake_role_grants" "main" {
+  provider  = snowflake.security_admin
   role_name = snowflake_role.main.name
   users = [
     snowflake_user.main.name,
@@ -57,18 +61,19 @@ resource "snowflake_role_grants" "main" {
 }
 
 resource "snowflake_storage_integration" "main" {
-  name    = "FULLSTORY_STAGE_${local.suffix}"
-  comment = "Stage for FullStory data"
-  type    = "EXTERNAL_STAGE"
-  enabled = true
+  provider = snowflake.account_admin
+  name     = "FULLSTORY_STAGE_${local.suffix}"
+  comment  = "Stage for FullStory data"
+  type     = "EXTERNAL_STAGE"
+  enabled  = true
 
   storage_provider          = var.fullstory_storage_provider
   storage_allowed_locations = var.fullstory_storage_allowed_locations
 }
 
 resource "snowflake_grant_privileges_to_role" "integration" {
-  role_name = snowflake_role.main.name
-
+  provider   = snowflake.security_admin
+  role_name  = snowflake_role.main.name
   privileges = ["USAGE"]
   on_account_object {
     object_type = "INTEGRATION"
@@ -77,11 +82,13 @@ resource "snowflake_grant_privileges_to_role" "integration" {
 }
 
 resource "snowflake_network_policy" "main" {
+  provider        = snowflake.security_admin
   name            = "FULLSTORY_NETWORK_POLICY_${local.suffix}"
-  allowed_ip_list = local.fullstory_cidr_ipv4
+  allowed_ip_list = [local.fullstory_cidr_ipv4]
 }
 
 resource "snowflake_network_policy_attachment" "main" {
+  provider            = snowflake.security_admin
   network_policy_name = snowflake_network_policy.main.name
   set_for_account     = false
   users               = [snowflake_user.main.name]

@@ -22,14 +22,14 @@ variable "fullstory_data_center" {
 variable "fullstory_storage_allowed_locations" {
   type        = list(string)
   description = "The list of allowed locations for the storage provider. This is an advanced option and should only be changed if instructed by Fullstory. Ex. <cloud>://<bucket>/<path>/"
-  default     = "gcs://fullstoryapp-warehouse-sync-bundles"
+  default     = ["gcs://fullstoryapp-warehouse-sync-bundles"]
 }
 
 variable "fullstory_storage_provider" {
   type        = string
   description = "The storage provider to use. Either 'S3', 'GCS' or 'AZURE'. This is an advanced option and should only be changed if instructed by Fullstory."
   validation {
-    condition     = var.storage_provider == "S3" || var.storage_provider == "GCS" || var.storage_provider == "AZURE"
+    condition     = var.fullstory_storage_provider == "S3" || var.fullstory_storage_provider == "GCS" || var.fullstory_storage_provider == "AZURE"
     error_message = "The storage provider must be either 'S3', 'GCS', or 'AZURE'."
   }
   default = "GCS"

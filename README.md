@@ -6,6 +6,8 @@
 
 This module creates all the proper roles, users, grants, and storage integrations so that Fullstory can connect to the database and load data. For more information checkout [this KB article](https://help.fullstory.com/hc/en-us/articles/6295349250199-Snowflake).
 
+This module **does not** create a reader role that can be used to view the data. To query the data inside Snowflake, you should create a role capable of reading the proper tables and columns according to your policies.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -76,6 +78,131 @@ output "fullstory_warehouse_setup_password" {
 
 output "fullstory_warehouse_setup_gcs_storage_integration" {
   value = module.fullstory_warehouse_setup.gcs_storage_integration
+}
+```
+
+### Creating a READER role
+This module **does not** create a READER role. You can use the following example to create a READER role that will allow a user to use and read all objects _and_ all future objects in the database.
+```hcl
+resource "snowflake_role" "data_user_role" {
+  provider = snowflake.security_admin
+  name     = "READER"
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_database" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["USAGE", "MONITOR"]
+  on_account_object {
+    object_name = "MY_DATABASE"
+    object_type = "DATABASE"
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_schema" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = [
+    "USAGE",
+    "MONITOR",
+  ]
+  on_schema {
+    all_schemas_in_database = "MY_DATABASE"
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_future_schema" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = [
+    "USAGE",
+    "MONITOR",
+  ]
+  on_schema {
+    future_schemas_in_database = "MY_DATABASE"
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_tables" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    all {
+      object_type_plural = "TABLES"
+      in_database        = "MY_DATABASE"
+    }
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_future_tables" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    future {
+      object_type_plural = "TABLES"
+      in_database        = "MY_DATABASE"
+    }
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_views" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    all {
+      object_type_plural = "VIEWS"
+      in_database        = snowflake_database.db.name
+    }
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_future_views" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    future {
+      object_type_plural = "VIEWS"
+      in_database        = snowflake_database.db.name
+    }
+  }
+}
+
+resource "snowflake_grant_privileges_to_role" "data_user_mat_views" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    all {
+      object_type_plural = "MATERIALIZED VIEWS"
+      in_database        = snowflake_database.db.name
+    }
+  }
+}
+
+
+resource "snowflake_grant_privileges_to_role" "data_user_future_mat_views" {
+  provider  = snowflake.security_admin
+  role_name = snowflake_role.data_user_role.name
+
+  privileges = ["SELECT"]
+  on_schema_object {
+    future {
+      object_type_plural = "MATERIALIZED VIEWS"
+      in_database        = snowflake_database.db.name
+    }
+  }
 }
 ```
 <!-- END_TF_DOCS -->

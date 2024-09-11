@@ -17,7 +17,7 @@ provider "snowflake" {
 
 resource "snowflake_role" "main" {
   provider = snowflake.security_admin
-  name     = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
+  name     = coalesce(var.role_name, "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}")
 }
 
 resource "snowflake_grant_privileges_to_role" "database" {
@@ -41,6 +41,7 @@ resource "snowflake_grant_privileges_to_role" "warehouse" {
 }
 
 resource "random_password" "main" {
+  count = (var.disable_password || var.password != null) ? 0 : 1
   length           = 16
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
@@ -51,7 +52,9 @@ resource "snowflake_user" "main" {
   name              = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
   default_warehouse = var.warehouse_name
   default_role      = snowflake_role.main.name
-  password          = random_password.main.result
+  password          = var.disable_password ? "" : (var.password != null ? var.password : random_password.main[0].result)
+  rsa_public_key = var.rsa_public_key
+  rsa_public_key_2 = var.rsa_public_key_2
 }
 
 resource "snowflake_grant_privileges_to_role" "user" {
@@ -74,7 +77,7 @@ resource "snowflake_role_grants" "main" {
 
 resource "snowflake_storage_integration" "main" {
   provider = snowflake.account_admin
-  name     = "FULLSTORY_STAGE_${local.suffix}"
+  name     = coalesce(var.stage_name, "FULLSTORY_STAGE_${local.suffix}")
   comment  = "Stage for FullStory data"
   type     = "EXTERNAL_STAGE"
   enabled  = true

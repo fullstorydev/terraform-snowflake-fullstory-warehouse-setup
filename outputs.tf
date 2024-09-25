@@ -9,7 +9,7 @@ output "username" {
 }
 
 output "password" {
-  description = "The Fullstory password that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true."
+  description = "The password for the configured user that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true."
   value       = snowflake_user.main.password
   sensitive   = true
 }

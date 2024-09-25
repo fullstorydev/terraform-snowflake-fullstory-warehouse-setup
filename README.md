@@ -39,7 +39,7 @@ This module **does not** create a reader role that can be used to view the data.
 | Name | Description |
 |------|-------------|
 | <a name="output_gcs_storage_integration"></a> [gcs\_storage\_integration](#output\_gcs\_storage\_integration) | The name of the GCS storage integration that can be used in the Fullstory app when configuring the Snowflake integration. |
-| <a name="output_password"></a> [password](#output\_password) | The Fullstory password that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true. |
+| <a name="output_password"></a> [password](#output\_password) | The password for the configured user that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true. |
 | <a name="output_role"></a> [role](#output\_role) | The Fullstory role that can be used in the Fullstory app when configuring the Snowflake integration. |
 | <a name="output_username"></a> [username](#output\_username) | The Fullstory username that can be used in the Fullstory app when configuring the Snowflake integration. |
 

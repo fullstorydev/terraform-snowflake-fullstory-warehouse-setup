@@ -14,17 +14,23 @@ This module **does not** create a reader role that can be used to view the data.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
-| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >= 0.83.1 |
+| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | ~> 0.83.1 |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_database_name"></a> [database\_name](#input\_database\_name) | The name of the Snowflake database to use | `string` | n/a | yes |
-| <a name="input_fullstory_cidr_ipv4"></a> [fullstory\_cidr\_ipv4](#input\_fullstory\_cidr\_ipv4) | The CIDR block that Fullstory will use to connect to the Redshift cluster. | `string` | `""` | no |
+| <a name="input_disable_password"></a> [disable\_password](#input\_disable\_password) | Whether to disable the password for the Snowflake user. If true, the user will only be able to authenticate using the RSA public key. | `bool` | `false` | no |
+| <a name="input_fullstory_cidr_ipv4"></a> [fullstory\_cidr\_ipv4](#input\_fullstory\_cidr\_ipv4) | The CIDR block that Fullstory will use to connect to Snowflake. | `string` | `""` | no |
 | <a name="input_fullstory_data_center"></a> [fullstory\_data\_center](#input\_fullstory\_data\_center) | The data center where your Fullstory account is hosted. Either 'NA1' or 'EU1'. See https://help.fullstory.com/hc/en-us/articles/8901113940375-Fullstory-Data-Residency for more information. | `string` | `"NA1"` | no |
 | <a name="input_fullstory_storage_allowed_locations"></a> [fullstory\_storage\_allowed\_locations](#input\_fullstory\_storage\_allowed\_locations) | The list of allowed locations for the storage provider. This is an advanced option and should only be changed if instructed by Fullstory. Ex. <cloud>://<bucket>/<path>/ | `list(string)` | <pre>[<br>  "gcs://fullstoryapp-warehouse-sync-bundles"<br>]</pre> | no |
 | <a name="input_fullstory_storage_provider"></a> [fullstory\_storage\_provider](#input\_fullstory\_storage\_provider) | The storage provider to use. Either 'S3', 'GCS' or 'AZURE'. This is an advanced option and should only be changed if instructed by Fullstory. | `string` | `"GCS"` | no |
+| <a name="input_password"></a> [password](#input\_password) | The password to use for the Snowflake user. | `string` | `null` | no |
+| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | The name of the Snowflake role to create. | `string` | `null` | no |
+| <a name="input_rsa_public_key"></a> [rsa\_public\_key](#input\_rsa\_public\_key) | The RSA public key to use for the Snowflake user. Must be on 1 line without header and trailer. | `string` | `null` | no |
+| <a name="input_rsa_public_key_2"></a> [rsa\_public\_key\_2](#input\_rsa\_public\_key\_2) | The second RSA public key to use for the Snowflake user. Used when rotating keys. Must be on 1 line without header and trailer. | `string` | `null` | no |
+| <a name="input_stage_name"></a> [stage\_name](#input\_stage\_name) | The name of the Snowflake stage to create. | `string` | `null` | no |
 | <a name="input_suffix"></a> [suffix](#input\_suffix) | The suffix to append to the names of the resources created by this module so that the module can be instantiated many times. Must only contain letters. | `string` | n/a | yes |
 | <a name="input_warehouse_name"></a> [warehouse\_name](#input\_warehouse\_name) | The name of the Snowflake warehouse to use. | `string` | n/a | yes |
 
@@ -33,7 +39,7 @@ This module **does not** create a reader role that can be used to view the data.
 | Name | Description |
 |------|-------------|
 | <a name="output_gcs_storage_integration"></a> [gcs\_storage\_integration](#output\_gcs\_storage\_integration) | The name of the GCS storage integration that can be used in the Fullstory app when configuring the Snowflake integration. |
-| <a name="output_password"></a> [password](#output\_password) | The Fullstory password that can be used in the Fullstory app when configuring the Snowflake integration. |
+| <a name="output_password"></a> [password](#output\_password) | The password for the configured user that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true. |
 | <a name="output_role"></a> [role](#output\_role) | The Fullstory role that can be used in the Fullstory app when configuring the Snowflake integration. |
 | <a name="output_username"></a> [username](#output\_username) | The Fullstory username that can be used in the Fullstory app when configuring the Snowflake integration. |
 

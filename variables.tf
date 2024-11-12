@@ -4,28 +4,34 @@ variable "database_name" {
 }
 
 variable "role_name" {
-  type = string
+  type        = string
   description = "The name of the Snowflake role to create."
-  default = null
+  default     = null
 }
 
 variable "stage_name" {
-  type = string
+  type        = string
   description = "The name of the Snowflake stage to create."
-  default = null
+  default     = null
 }
 
 variable "password" {
-  type = string
+  type        = string
   description = "The password to use for the Snowflake user."
-  default = null
-  sensitive = true
+  default     = null
+  sensitive   = true
 }
 
 variable "fullstory_cidr_ipv4" {
   type        = string
-  description = "The CIDR block that Fullstory will use to connect to Snowflake."
+  description = "DEPRECATED: Use fullstory_cidr_ipv4s. The CIDR block that Fullstory will use to connect to Snowflake."
   default     = ""
+}
+
+variable "fullstory_cidr_ipv4s" {
+  type        = list(string)
+  description = "The CIDR blocks that Fullstory will use to connect to Snowflake."
+  default     = []
 }
 
 variable "fullstory_data_center" {
@@ -69,19 +75,19 @@ variable "warehouse_name" {
 }
 
 variable "disable_password" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Whether to disable the password for the Snowflake user. If true, the user will only be able to authenticate using the RSA public key."
 }
 
 variable "rsa_public_key" {
-  type = string
+  type        = string
   description = "The RSA public key to use for the Snowflake user. Must be on 1 line without header and trailer."
-  default = null
+  default     = null
 }
 
 variable "rsa_public_key_2" {
-  type = string
+  type        = string
   description = "The second RSA public key to use for the Snowflake user. Used when rotating keys. Must be on 1 line without header and trailer."
-  default = null
+  default     = null
 }

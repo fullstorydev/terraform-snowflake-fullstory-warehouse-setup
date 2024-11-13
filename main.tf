@@ -1,6 +1,9 @@
 locals {
-  fullstory_cidr_ipv4 = var.fullstory_cidr_ipv4 != "" ? var.fullstory_cidr_ipv4 : (var.fullstory_data_center == "EU1" ? "34.89.210.80/29" : "8.35.195.0/29")
-  suffix              = upper(var.suffix)
+  fullstory_default_cidr_ip4 = var.fullstory_data_center == "EU1" ? "34.89.210.80/29" : "8.35.195.0/29"
+  fullstory_cidr_ipv4        = var.fullstory_cidr_ipv4 != "" ? var.fullstory_cidr_ipv4 : local.fullstory_default_cidr_ip4
+  fullstory_cidr_ipv4s       = length(var.fullstory_cidr_ipv4s) > 0 ? var.fullstory_cidr_ipv4s : [local.fullstory_cidr_ipv4]
+
+  suffix = upper(var.suffix)
 }
 
 provider "snowflake" {
@@ -41,7 +44,7 @@ resource "snowflake_grant_privileges_to_role" "warehouse" {
 }
 
 resource "random_password" "main" {
-  count = (var.disable_password || var.password != null) ? 0 : 1
+  count            = (var.disable_password || var.password != null) ? 0 : 1
   length           = 16
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
@@ -53,8 +56,8 @@ resource "snowflake_user" "main" {
   default_warehouse = var.warehouse_name
   default_role      = snowflake_role.main.name
   password          = var.disable_password ? "" : (var.password != null ? var.password : random_password.main[0].result)
-  rsa_public_key = var.rsa_public_key
-  rsa_public_key_2 = var.rsa_public_key_2
+  rsa_public_key    = var.rsa_public_key
+  rsa_public_key_2  = var.rsa_public_key_2
 }
 
 resource "snowflake_grant_privileges_to_role" "user" {
@@ -99,7 +102,7 @@ resource "snowflake_grant_privileges_to_role" "integration" {
 resource "snowflake_network_policy" "main" {
   provider        = snowflake.security_admin
   name            = "FULLSTORY_NETWORK_POLICY_${local.suffix}"
-  allowed_ip_list = [local.fullstory_cidr_ipv4]
+  allowed_ip_list = local.fullstory_cidr_ipv4s
 }
 
 resource "snowflake_network_policy_attachment" "main" {

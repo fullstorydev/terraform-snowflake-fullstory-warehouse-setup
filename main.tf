@@ -44,7 +44,7 @@ resource "snowflake_grant_privileges_to_role" "warehouse" {
 }
 
 resource "random_password" "main" {
-  count            = (var.disable_password || var.password != null) ? 0 : 1
+  count            = var.manage_password ? 1 : 0
   length           = 16
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
@@ -55,7 +55,7 @@ resource "snowflake_user" "main" {
   name              = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
   default_warehouse = var.warehouse_name
   default_role      = snowflake_role.main.name
-  password          = var.disable_password ? "" : (var.password != null ? var.password : random_password.main[0].result)
+  password          = var.manage_password ? random_password.main[0].result : var.password
   rsa_public_key    = var.rsa_public_key
   rsa_public_key_2  = var.rsa_public_key_2
 }

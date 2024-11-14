@@ -6,18 +6,6 @@ locals {
   suffix = upper(var.suffix)
 }
 
-provider "snowflake" {
-  alias = "account_admin"
-}
-
-provider "snowflake" {
-  alias = "security_admin"
-}
-
-provider "snowflake" {
-  alias = "sys_admin"
-}
-
 resource "snowflake_role" "main" {
   provider = snowflake.security_admin
   name     = coalesce(var.role_name, "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}")

@@ -17,7 +17,7 @@ variable "stage_name" {
 
 variable "password" {
   type        = string
-  description = "The password to use for the Snowflake user. Disable"
+  description = "The password to use for the Snowflake user. Use manage_password=true if you want to generate a random password."
   default     = null
   sensitive   = true
 }

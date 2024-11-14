@@ -17,7 +17,7 @@ variable "stage_name" {
 
 variable "password" {
   type        = string
-  description = "The password to use for the Snowflake user."
+  description = "The password to use for the Snowflake user. Disable"
   default     = null
   sensitive   = true
 }
@@ -74,10 +74,10 @@ variable "warehouse_name" {
   description = "The name of the Snowflake warehouse to use."
 }
 
-variable "disable_password" {
+variable "manage_password" {
   type        = bool
-  default     = false
-  description = "Whether to disable the password for the Snowflake user. If true, the user will only be able to authenticate using the RSA public key."
+  default     = true
+  description = "Whether to create a random password and use it for the Snowflake user. If false and no password or RSA public key is provided, the user will be created without a password."
 }
 
 variable "rsa_public_key" {

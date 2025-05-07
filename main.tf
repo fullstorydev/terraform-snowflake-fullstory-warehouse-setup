@@ -51,13 +51,14 @@ resource "random_password" "main" {
 }
 
 resource "snowflake_user" "main" {
-  provider          = snowflake.security_admin
-  name              = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
-  default_warehouse = var.warehouse_name
-  default_role      = snowflake_role.main.name
-  password          = var.manage_password ? random_password.main[0].result : var.password
-  rsa_public_key    = var.rsa_public_key
-  rsa_public_key_2  = var.rsa_public_key_2
+  provider                = snowflake.security_admin
+  name                    = "FULLSTORY_WAREHOUSE_SETUP_${local.suffix}"
+  default_warehouse       = var.warehouse_name
+  default_role            = snowflake_role.main.name
+  password                = var.manage_password ? random_password.main[0].result : var.password
+  rsa_public_key          = var.rsa_public_key
+  rsa_public_key_2        = var.rsa_public_key_2
+  default_secondary_roles = ["ALL"]
 }
 
 resource "snowflake_grant_privileges_to_role" "user" {

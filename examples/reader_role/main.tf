@@ -1,11 +1,11 @@
-resource "snowflake_role" "data_user_role" {
+resource "snowflake_account_role" "data_user_role" {
   provider = snowflake.security_admin
   name     = "READER"
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_database" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_database" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["USAGE", "MONITOR"]
   on_account_object {
@@ -14,9 +14,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_database" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_schema" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_schema" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = [
     "USAGE",
@@ -27,9 +27,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_schema" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_schema" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_schema" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = [
     "USAGE",
@@ -40,9 +40,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_schema" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_tables" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_tables" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -53,9 +53,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_tables" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_tables" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_tables" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -66,9 +66,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_tables" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -79,9 +79,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_views" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -92,9 +92,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_views" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_mat_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_mat_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -106,9 +106,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_mat_views" {
 }
 
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_mat_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_mat_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {

@@ -1,6 +1,6 @@
 output "role" {
   description = "The Fullstory role that can be used in the Fullstory app when configuring the Snowflake integration."
-  value       = snowflake_role.main.name
+  value       = snowflake_account_role.main.name
 }
 
 output "username" {

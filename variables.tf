@@ -80,12 +80,12 @@ variable "manage_password" {
 
 variable "rsa_public_key" {
   type        = string
-  description = "The RSA public key to use for the Snowflake user. Must be on 1 line without header and trailer."
+  description = "The RSA public key to use for the Snowflake user. Accepts PEM format (e.g. from tls_private_key resource's public_key_pem output)."
   default     = null
 }
 
 variable "rsa_public_key_2" {
   type        = string
-  description = "The second RSA public key to use for the Snowflake user. Used when rotating keys. Must be on 1 line without header and trailer."
+  description = "The second RSA public key to use for the Snowflake user. Used when rotating keys. Accepts PEM format (e.g. from tls_private_key resource's public_key_pem output)."
   default     = null
 }

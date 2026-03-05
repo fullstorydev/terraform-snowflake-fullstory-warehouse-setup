@@ -5,20 +5,19 @@
 ### BREAKING CHANGES
 
 - **Provider migration**: Switched from `Snowflake-Labs/snowflake` (~> 0.83.1) to `snowflakedb/snowflake` (~> 2.14). Users must update their provider configuration and run `terraform init -upgrade`.
-- **Resource renames**: The following resources have been renamed to match the new provider's requirements. Existing state must be migrated using `terraform state mv` or resources will be destroyed and recreated:
-  - `snowflake_role` → `snowflake_account_role`
-  - `snowflake_grant_privileges_to_role` → `snowflake_grant_privileges_to_account_role`
-  - `snowflake_role_grants` → `snowflake_grant_account_role`
-  - `snowflake_storage_integration` remains `snowflake_storage_integration` (with `storage_provider` attribute)
-- **Attribute changes**:
-  - `role_name` → `account_role_name` on grant resources
-  - `default_secondary_roles` → `default_secondary_roles_option` on user resource
-  - `snowflake_grant_account_role` now uses `user_name` (single string) instead of `users` (list)
-- **Storage integration**: Reverted from `snowflake_storage_integration_gcs` back to `snowflake_storage_integration` with a configurable `fullstory_storage_provider` variable (defaults to `"GCS"`).
+  - **Resource renames**: The following resources have been renamed to match the new provider's requirements. Existing state must be migrated using `terraform state mv` or resources will be destroyed and recreated:
+    - `snowflake_role` → `snowflake_account_role`
+    - `snowflake_grant_privileges_to_role` → `snowflake_grant_privileges_to_account_role`
+    - `snowflake_role_grants` → `snowflake_grant_account_role`
+    - `snowflake_storage_integration` remains `snowflake_storage_integration` (with `storage_provider` attribute)
+  - **Attribute changes**:
+    - `role_name` → `account_role_name` on grant resources
+    - `default_secondary_roles` → `default_secondary_roles_option` on user resource
+    - `snowflake_grant_account_role` now uses `user_name` (single string) instead of `users` (list)
 
 ### Migration Guide
 
-There are two options for migrating to v1.0.0. **Option A** (destroy and recreate) is simpler but causes temporary downtime. **Option B** (manual state migration) avoids downtime by re-importing existing Snowflake resources into the new Terraform state.
+There are two options for migrating to v1.0.0.
 
 #### Option A: Destroy and Recreate (simpler, but causes downtime)
 
@@ -28,7 +27,7 @@ Due to the provider change from `Snowflake-Labs/snowflake` to `snowflakedb/snowf
    ```hcl
    module "fullstory_warehouse_setup" {
      source = "fullstorydev/fullstory-warehouse-setup/snowflake"
-     version ="0.2.3" # your current verison
+     version = "0.2.3" # your current version
      # ...
    }
    ```
@@ -43,13 +42,13 @@ Due to the provider change from `Snowflake-Labs/snowflake` to `snowflakedb/snowf
      # ...
    }
    ```
-6. **Run `terraform plan` and `terraform apply`** to create the new resources.
-8. **Update FullStory** with the new connection details from your Terraform outputs (role, username, password, storage integration).
-9. For resources **outside of this module** (e.g., custom grant resources you manage yourself), follow the [Snowflake provider's Migration Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration) to migrate to the new resource types.
+6. **Run `terraform init -upgrade`, `terraform plan` and `terraform apply`** to download the new module and create the new resources.
+7. **Update FullStory** with the new connection details from your Terraform outputs if changed (role, username, key, storage integration).
+8. For resources **outside of this module** (e.g., custom grant resources you manage yourself), follow the [Snowflake provider's Migration Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration) to migrate to the new resource types.
 
 #### Option B: Manual State Migration (no downtime)
 
-This approach removes the old resources from Terraform state and imports them back under the new resource types, preserving the actual Snowflake objects. No resources are destroyed or recreated in Snowflake, so there is no downtime.
+This approach removes the old resources from Terraform state and imports them back under the new resource types, preserving the actual Snowflake objects. No resources are destroyed or recreated in **Snowflake**, so there is no downtime.
 
 > **Note**: In the examples below, replace `module.fullstory_warehouse_setup` with the actual module path in your Terraform configuration, and replace `<SUFFIX>` with your configured suffix value (uppercased).
 
@@ -128,6 +127,6 @@ This approach removes the old resources from Terraform state and imports them ba
    - `<WAREHOUSE_NAME>` is your Snowflake warehouse name
    - `<STORAGE_INTEGRATION_NAME>` is the storage integration name (defaults to `FULLSTORY_STAGE_<SUFFIX>` unless you set `stage_name`)
 
-6. **Run `terraform plan`** to verify that no changes are needed. The plan should show no additions, changes, or destructions for the migrated resources. If there are minor diffs (e.g., attribute formatting), review and apply them — these are safe cosmetic updates.
+6. **Run `terraform plan`** to verify that no changes are needed. The plan should show no major additions or destructions for the migrated resources. If there are minor diffs (e.g., attributes defaults in the new providers, etc.), review and apply them.
 
 7. For resources **outside of this module** (e.g., custom grant resources you manage yourself), follow the [Snowflake provider's Migration Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/resource_migration) to migrate to the new resource types.

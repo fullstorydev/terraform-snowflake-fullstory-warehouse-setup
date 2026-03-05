@@ -44,21 +44,19 @@ variable "fullstory_data_center" {
   }
 }
 
+variable "fullstory_storage_provider" {
+  type        = string
+  description = "The storage provider for the storage integration. This is an advanced option and should only be changed if instructed by Fullstory."
+  default     = "GCS"
+}
+
 variable "fullstory_storage_allowed_locations" {
   type        = list(string)
   description = "The list of allowed locations for the storage provider. This is an advanced option and should only be changed if instructed by Fullstory. Ex. <cloud>://<bucket>/<path>/"
   default     = ["gcs://fullstoryapp-warehouse-sync-bundles"]
 }
 
-variable "fullstory_storage_provider" {
-  type        = string
-  description = "The storage provider to use. Either 'S3', 'GCS' or 'AZURE'. This is an advanced option and should only be changed if instructed by Fullstory."
-  validation {
-    condition     = var.fullstory_storage_provider == "S3" || var.fullstory_storage_provider == "GCS" || var.fullstory_storage_provider == "AZURE"
-    error_message = "The storage provider must be either 'S3', 'GCS', or 'AZURE'."
-  }
-  default = "GCS"
-}
+
 
 variable "suffix" {
   type        = string
@@ -82,12 +80,12 @@ variable "manage_password" {
 
 variable "rsa_public_key" {
   type        = string
-  description = "The RSA public key to use for the Snowflake user. Must be on 1 line without header and trailer."
+  description = "The RSA public key to use for the Snowflake user. Accepts PEM format (e.g. from tls_private_key resource's public_key_pem output)."
   default     = null
 }
 
 variable "rsa_public_key_2" {
   type        = string
-  description = "The second RSA public key to use for the Snowflake user. Used when rotating keys. Must be on 1 line without header and trailer."
+  description = "The second RSA public key to use for the Snowflake user. Used when rotating keys. Accepts PEM format (e.g. from tls_private_key resource's public_key_pem output)."
   default     = null
 }

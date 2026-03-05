@@ -14,7 +14,7 @@ This module **does not** create a reader role that can be used to view the data.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
-| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | ~> 0.83.1 |
+| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | ~> 2.14 |
 
 ## Inputs
 
@@ -25,12 +25,12 @@ This module **does not** create a reader role that can be used to view the data.
 | <a name="input_fullstory_cidr_ipv4s"></a> [fullstory\_cidr\_ipv4s](#input\_fullstory\_cidr\_ipv4s) | The CIDR blocks that Fullstory will use to connect to Snowflake. | `list(string)` | `[]` | no |
 | <a name="input_fullstory_data_center"></a> [fullstory\_data\_center](#input\_fullstory\_data\_center) | The data center where your Fullstory account is hosted. Either 'NA1' or 'EU1'. See https://help.fullstory.com/hc/en-us/articles/8901113940375-Fullstory-Data-Residency for more information. | `string` | `"NA1"` | no |
 | <a name="input_fullstory_storage_allowed_locations"></a> [fullstory\_storage\_allowed\_locations](#input\_fullstory\_storage\_allowed\_locations) | The list of allowed locations for the storage provider. This is an advanced option and should only be changed if instructed by Fullstory. Ex. <cloud>://<bucket>/<path>/ | `list(string)` | <pre>[<br>  "gcs://fullstoryapp-warehouse-sync-bundles"<br>]</pre> | no |
-| <a name="input_fullstory_storage_provider"></a> [fullstory\_storage\_provider](#input\_fullstory\_storage\_provider) | The storage provider to use. Either 'S3', 'GCS' or 'AZURE'. This is an advanced option and should only be changed if instructed by Fullstory. | `string` | `"GCS"` | no |
+| <a name="input_fullstory_storage_provider"></a> [fullstory\_storage\_provider](#input\_fullstory\_storage\_provider) | The storage provider for the storage integration. This is an advanced option and should only be changed if instructed by Fullstory. | `string` | `"GCS"` | no |
 | <a name="input_manage_password"></a> [manage\_password](#input\_manage\_password) | Whether to create a random password and use it for the Snowflake user. If false and no password or RSA public key is provided, the user will be created without a password. | `bool` | `true` | no |
 | <a name="input_password"></a> [password](#input\_password) | The password to use for the Snowflake user. Use manage\_password=true if you want to generate a random password. | `string` | `null` | no |
 | <a name="input_role_name"></a> [role\_name](#input\_role\_name) | The name of the Snowflake role to create. | `string` | `null` | no |
-| <a name="input_rsa_public_key"></a> [rsa\_public\_key](#input\_rsa\_public\_key) | The RSA public key to use for the Snowflake user. Must be on 1 line without header and trailer. | `string` | `null` | no |
-| <a name="input_rsa_public_key_2"></a> [rsa\_public\_key\_2](#input\_rsa\_public\_key\_2) | The second RSA public key to use for the Snowflake user. Used when rotating keys. Must be on 1 line without header and trailer. | `string` | `null` | no |
+| <a name="input_rsa_public_key"></a> [rsa\_public\_key](#input\_rsa\_public\_key) | The RSA public key to use for the Snowflake user. Accepts PEM format (e.g. from tls\_private\_key resource's public\_key\_pem output). | `string` | `null` | no |
+| <a name="input_rsa_public_key_2"></a> [rsa\_public\_key\_2](#input\_rsa\_public\_key\_2) | The second RSA public key to use for the Snowflake user. Used when rotating keys. Accepts PEM format (e.g. from tls\_private\_key resource's public\_key\_pem output). | `string` | `null` | no |
 | <a name="input_stage_name"></a> [stage\_name](#input\_stage\_name) | The name of the Snowflake stage to create. | `string` | `null` | no |
 | <a name="input_suffix"></a> [suffix](#input\_suffix) | The suffix to append to the names of the resources created by this module so that the module can be instantiated many times. Must only contain letters. | `string` | n/a | yes |
 | <a name="input_warehouse_name"></a> [warehouse\_name](#input\_warehouse\_name) | The name of the Snowflake warehouse to use. | `string` | n/a | yes |
@@ -40,7 +40,7 @@ This module **does not** create a reader role that can be used to view the data.
 | Name | Description |
 |------|-------------|
 | <a name="output_gcs_storage_integration"></a> [gcs\_storage\_integration](#output\_gcs\_storage\_integration) | The name of the GCS storage integration that can be used in the Fullstory app when configuring the Snowflake integration. |
-| <a name="output_password"></a> [password](#output\_password) | The password for the configured user that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `disable_password` is true. |
+| <a name="output_password"></a> [password](#output\_password) | The password for the configured user that can be used in the Fullstory app when configuring the Snowflake integration. Will be empty if `manage_password` is false. |
 | <a name="output_role"></a> [role](#output\_role) | The Fullstory role that can be used in the Fullstory app when configuring the Snowflake integration. |
 | <a name="output_username"></a> [username](#output\_username) | The Fullstory username that can be used in the Fullstory app when configuring the Snowflake integration. |
 
@@ -57,8 +57,14 @@ resource "snowflake_warehouse" "main" {
   auto_suspend   = 60
 }
 
+resource "tls_private_key" "fullstory_user_rsa_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
 module "fullstory_warehouse_setup" {
-  source = "fullstorydev/fullstory-warehouse-setup/snowflake"
+  source  = "fullstorydev/fullstory-warehouse-setup/snowflake"
+  version = "~> 1.0"
   providers = {
     snowflake.account_admin  = snowflake.account_admin
     snowflake.security_admin = snowflake.security_admin
@@ -68,6 +74,7 @@ module "fullstory_warehouse_setup" {
   database_name         = snowflake_database.main.name
   warehouse_name        = snowflake_warehouse.main.name
   fullstory_data_center = "NA1"
+  rsa_public_key        = tls_private_key.fullstory_user_rsa_key.public_key_pem
   suffix                = "ACME" # This should represent this module's unique identifier
 }
 
@@ -80,7 +87,13 @@ output "fullstory_warehouse_setup_username" {
 }
 
 output "fullstory_warehouse_setup_password" {
-  value = module.fullstory_warehouse_setup.password
+  value     = module.fullstory_warehouse_setup.password
+  sensitive = true
+}
+
+output "fullstory_warehouse_setup_private_key" {
+  value     = tls_private_key.fullstory_user_rsa_key.private_key_pem
+  sensitive = true
 }
 
 output "fullstory_warehouse_setup_gcs_storage_integration" {
@@ -91,14 +104,14 @@ output "fullstory_warehouse_setup_gcs_storage_integration" {
 ### Creating a READER role
 This module **does not** create a READER role. You can use the following example to create a READER role that will allow a user to use and read all objects _and_ all future objects in the database.
 ```hcl
-resource "snowflake_role" "data_user_role" {
+resource "snowflake_account_role" "data_user_role" {
   provider = snowflake.security_admin
   name     = "READER"
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_database" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_database" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["USAGE", "MONITOR"]
   on_account_object {
@@ -107,9 +120,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_database" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_schema" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_schema" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = [
     "USAGE",
@@ -120,9 +133,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_schema" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_schema" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_schema" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = [
     "USAGE",
@@ -133,9 +146,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_schema" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_tables" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_tables" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -146,9 +159,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_tables" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_tables" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_tables" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -159,9 +172,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_tables" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -172,9 +185,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_views" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -185,9 +198,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_future_views" {
   }
 }
 
-resource "snowflake_grant_privileges_to_role" "data_user_mat_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_mat_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {
@@ -199,9 +212,9 @@ resource "snowflake_grant_privileges_to_role" "data_user_mat_views" {
 }
 
 
-resource "snowflake_grant_privileges_to_role" "data_user_future_mat_views" {
-  provider  = snowflake.security_admin
-  role_name = snowflake_role.data_user_role.name
+resource "snowflake_grant_privileges_to_account_role" "data_user_future_mat_views" {
+  provider          = snowflake.security_admin
+  account_role_name = snowflake_account_role.data_user_role.name
 
   privileges = ["SELECT"]
   on_schema_object {

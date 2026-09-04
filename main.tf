@@ -64,6 +64,11 @@ resource "snowflake_user" "main" {
   rsa_public_key_2               = var.rsa_public_key_2
   default_secondary_roles_option = "ALL"
   network_policy                 = snowflake_network_policy.main.name
+
+  lifecycle {
+    # Suppress false drift: provider re-reads this computed block every plan and always shows a diff.
+    ignore_changes = [parameters]
+  }
 }
 
 resource "snowflake_grant_privileges_to_account_role" "user" {

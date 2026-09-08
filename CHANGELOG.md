@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+
+### Fixes
+
+- **Network policy attachment**: Replaced the `snowflake_network_policy_attachment` resource with the `network_policy` attribute set directly on `snowflake_user`, per the provider's recommended approach. The policy itself (`snowflake_network_policy.main`) is unchanged, and module variables/outputs are unaffected.
+  - **Manual state migration required.** Since `network_policy` already reflects the policy attached by the old resource, `terraform plan` will likely show no change to `snowflake_user.main` — only `snowflake_network_policy_attachment.main` being destroyed. Destroying it unsets the network policy on the user, leaving it unprotected until a later apply reattaches it. To avoid this gap, before running `terraform apply` remove the attachment from state without destroying it:
+    ```bash
+    terraform state rm 'module.<your_module_name>.snowflake_network_policy_attachment.main'
+    ```
+    Replace `module.<your_module_name>` with this module's actual path in your configuration. No resources are destroyed in Snowflake, and no downtime results.
+
 ## 1.0.0
 
 ### BREAKING CHANGES

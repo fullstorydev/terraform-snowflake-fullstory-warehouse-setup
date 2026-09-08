@@ -63,6 +63,12 @@ resource "snowflake_user" "main" {
   rsa_public_key                 = var.rsa_public_key
   rsa_public_key_2               = var.rsa_public_key_2
   default_secondary_roles_option = "ALL"
+  network_policy                 = snowflake_network_policy.main.name
+
+  lifecycle {
+    # Suppress false drift: provider re-reads this computed block every plan and always shows a diff.
+    ignore_changes = [parameters]
+  }
 }
 
 resource "snowflake_grant_privileges_to_account_role" "user" {
@@ -105,11 +111,4 @@ resource "snowflake_network_policy" "main" {
   provider        = snowflake.security_admin
   name            = "FULLSTORY_NETWORK_POLICY_${local.suffix}"
   allowed_ip_list = local.fullstory_cidr_ipv4s
-}
-
-resource "snowflake_network_policy_attachment" "main" {
-  provider            = snowflake.security_admin
-  network_policy_name = snowflake_network_policy.main.name
-  set_for_account     = false
-  users               = [snowflake_user.main.name]
 }
